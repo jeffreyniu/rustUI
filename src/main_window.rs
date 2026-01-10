@@ -1,6 +1,9 @@
 #[path ="./fonts_cus.rs"]
 mod fonts_cus;
 
+#[path ="./pdf_cus.rs"]
+mod pdf_cus;
+
 use eframe::egui;
 
 pub struct MainWindow {
@@ -10,7 +13,7 @@ pub struct MainWindow {
 impl Default for MainWindow {
     fn default() -> Self {
         Self {
-            pdf_file_path: "/home/niutb/文档/jeffreyniu/GF0020-2018《国家通用手语常用词表》全本.pdf".to_string()
+            pdf_file_path: "/home/niutb/文档/jeffreyniu/Hillbilly Elegy by J. D. Vance.pdf".to_string()
         }
     }
 }
@@ -23,7 +26,18 @@ impl MainWindow {
     }
 
     fn read_pdf(&self, _path: &str) {
-        // Placeholder for PDF reading logic
+        let result = pdf_cus::load_pdf_of_hands_language(_path);
+
+        match result {
+            Ok(info) => {
+                for (index, item) in info.iter().enumerate() {
+                    println!("PDF Info: {} - {}",index, item);
+                }
+            }
+            Err(e) => {
+                println!("Error reading PDF: {:?}", e);
+            }
+        }
     }
 }
 
@@ -43,14 +57,16 @@ impl eframe::App for MainWindow {
 
         visuals.window_fill = egui::Color32::WHITE; // makes popup windows white too
         ctx.set_visuals(visuals);
-
+        
         egui::CentralPanel::default()  
         .show(ctx, |ui| {
             ui.heading("Tools");
             
             ui.horizontal(|ui| {
                 ui.label("PDF file: ");
-                ui.text_edit_singleline(&mut self.pdf_file_path);
+
+                ui.add(egui::TextEdit::singleline(&mut self.pdf_file_path).desired_width(450.0));
+
                 if ui.button("read").clicked() {
                     self.read_pdf(&self.pdf_file_path);
                 }

@@ -35,7 +35,7 @@ impl MainWindow {
                 }
             }
             Err(e) => {
-                println!("Error reading PDF: {:?}", e);
+                println!("Error reading PDF or saving images: {:?}", e);
             }
         }
     }

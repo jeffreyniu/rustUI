@@ -9,8 +9,8 @@ fn main() -> Result<(), eframe::Error> {
         ..Default::default()
     };
     eframe::run_native(
-        "self introduce",
+        "Tools",
         options,
-        Box::new(|_cc| Ok(Box::<main_window::MainWindow>::default())),
+         Box::new(|cc| Ok(Box::new(main_window::MainWindow::new(cc))))
     )
 }

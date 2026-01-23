@@ -1,0 +1,23 @@
+# 默认注释了源码仓库，如有需要可自行取消注释deb http://mirrors.ustc.edu.cn/debian/ bookworm main contrib non-free non-free-firmware
+deb-src http://mirrors.ustc.edu.cn/debian/ bookworm main contrib non-free non-free-firmware
+deb http://mirrors.ustc.edu.cn/debian/ bookworm-updates main contrib non-free non-free-firmware
+deb-src http://mirrors.ustc.edu.cn/debian/ bookworm-updates main contrib non-free non-free-firmware
+
+# backports 软件源，请按需启用deb http://mirrors.ustc.edu.cn/debian/ bookworm-backports main contrib non-free non-free-firmware
+deb-src http://mirrors.ustc.edu.cn/debian/ bookworm-backports main contrib non-free non-free-firmware
+
+deb http://ftp.debian.org/debian/ bookworm main contrib non-free
+deb http://ftp.debian.org/debian/ bookworm-updates main contrib non-free
+deb http://ftp.debian.org/debian/ bookworm-backports main contrib non-free
+deb http://security.debian.org/debian-security bookworm-security main contrib non-free
+
+# 默认情况下，使用以下源：deb http://mirrors.aliyun.com/debian bookworm main contrib non-free
+deb-src http://mirrors.aliyun.com/debian bookworm main contrib non-free
+
+# 对于安全更新：deb http://mirrors.aliyun.com/debian-security bookworm-security main contrib non-free
+deb-src http://mirrors.aliyun.com/debian-security bookworm-security main contrib non-free
+
+# 对于更新：deb http://mirrors.aliyun.com/debian bookworm-updates main contrib non-free
+deb-src http://mirrors.aliyun.com/debian bookworm-updates main contrib non-free
+
+E45: 已设定选项 'readonly' (请加 ! 强制执行)                                                18,1         底端

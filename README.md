@@ -1,5 +1,5 @@
 # rustUI
-A demo for rust development
+A demo for rust development in debian 12
 
 # Poppler depends on below 2 packages
 sudo apt update

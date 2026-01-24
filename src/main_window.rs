@@ -1,8 +1,3 @@
-use gpui::{
-    div, prelude::*, px, rgb, size, App, Application, Bounds, Context, SharedString, Window,
-    WindowBounds, WindowOptions,
-};
-
 #[path ="./fonts_cus.rs"]
 mod fonts_cus;
 

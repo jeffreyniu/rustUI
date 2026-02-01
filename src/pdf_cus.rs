@@ -72,7 +72,7 @@ pub fn load_pdf_of_hands_language(path: &str) -> Result<Vec<String>, Box<dyn Err
         }
         Err(e) => {
             println!("Failed to open PDF file: {}", path);
-            return Err(Box::new(e));
+            return Err(e.into());
         }
     }
 }

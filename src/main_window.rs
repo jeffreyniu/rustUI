@@ -3,13 +3,12 @@ mod pdf_cus;
 
 use iced::keyboard;
 use iced::widget::{
-    button, center_x, center_y, checkbox, column, container, pick_list, progress_bar, row, rule,
-    scrollable, slider, space, text, text_input, toggler,
+    button, center_x, center_y, checkbox, column, container, pick_list, progress_bar, row, rule, scrollable, slider, space, text, text_editor, text_input, toggler
 };
 use iced::{Center, Element, Fill, Shrink, Subscription, Theme};
 
 #[derive(Default)]
-pub struct Styling {
+pub struct MainWindow {
     pub theme: Option<Theme>,
     pub input_value: String,
     pub slider_value: f32,
@@ -30,13 +29,15 @@ pub enum Message {
     ClearTheme,
 }
 
-impl Styling {
+impl MainWindow {
     pub fn update(&mut self, message: Message) {
         match message {
             Message::ThemeChanged(theme) => {
                 self.theme = Some(theme);
             }
-            Message::InputChanged(value) => self.input_value = value,
+            Message::InputChanged(value) => {
+                self.input_value = value
+            }
             Message::ButtonPressed => {}
             Message::SliderChanged(value) => self.slider_value = value,
             Message::CheckboxToggled(value) => self.checkbox_value = value,
@@ -80,7 +81,8 @@ impl Styling {
         let text_input = text_input("Type something...", &self.input_value)
             .on_input(Message::InputChanged)
             .padding(10)
-            .size(20);
+            .size(20)
+            .font(iced::Font::with_name("wqy-zenhei"));
 
         let buttons = {
             let styles = [
@@ -189,39 +191,5 @@ impl Styling {
 
     pub fn theme(&self) -> Option<Theme> {
         self.theme.clone()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use rayon::prelude::*;
-
-    use iced_test::{Error, simulator};
-
-    #[test]
-    #[ignore]
-    fn it_showcases_every_theme() -> Result<(), Error> {
-        Theme::ALL
-            .par_iter()
-            .cloned()
-            .map(|theme| {
-                let mut styling = Styling::default();
-                styling.update(Message::ThemeChanged(theme.clone()));
-
-                let mut ui = simulator(styling.view());
-                let snapshot = ui.snapshot(&theme)?;
-
-                assert!(
-                    snapshot.matches_hash(format!(
-                        "snapshots/{theme}",
-                        theme = theme.to_string().to_ascii_lowercase().replace(" ", "_")
-                    ))?,
-                    "snapshots for {theme} should match!"
-                );
-
-                Ok(())
-            })
-            .collect()
     }
 }

@@ -1,13 +1,23 @@
-#[path ="./pdf_cus.rs"]
-mod pdf_cus;
-
 use iced::keyboard;
 use iced::widget::{
-    button, center_x, center_y, checkbox, column, container, pick_list, progress_bar, row, rule, scrollable, slider, space, text, text_editor, text_input, toggler
+    button, 
+    center_x, center_y, 
+    checkbox, 
+    column, 
+    container, 
+    pick_list, 
+    progress_bar, 
+    row, 
+    rule, 
+    scrollable, 
+    slider, 
+    space, 
+    text, 
+    text_input, 
+    toggler
 };
 use iced::{Center, Element, Fill, Shrink, Subscription, Theme};
 
-#[derive(Default)]
 pub struct MainWindow {
     pub theme: Option<Theme>,
     pub input_value: String,
@@ -29,6 +39,18 @@ pub enum Message {
     ClearTheme,
 }
 
+impl Default for MainWindow {
+    fn default() -> Self {
+        Self {
+            input_value: "中英文2混合".to_string(),
+            slider_value: 50.0,
+            checkbox_value: false,
+            toggler_value: false,
+            theme: None,
+        }
+    }
+}
+
 impl MainWindow {
     pub fn update(&mut self, message: Message) {
         match message {
@@ -36,7 +58,7 @@ impl MainWindow {
                 self.theme = Some(theme);
             }
             Message::InputChanged(value) => {
-                self.input_value = value
+                self.input_value = value;
             }
             Message::ButtonPressed => {}
             Message::SliderChanged(value) => self.slider_value = value,

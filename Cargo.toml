@@ -5,9 +5,9 @@ edition = "2024"
 
 [dependencies]
 csv = "1.4.0"
-eframe = "0.33.3"
-egui_extras = "0.33.3"
 encoding = "0.2.33"
+iced = "0.14.0"
+iced_winit = "0.14.0"
 image = "0.25.9"
 pdf = "0.9.1"
 poppler = "0.6.0"

@@ -1,76 +1,227 @@
-#[path ="./fonts_cus.rs"]
-mod fonts_cus;
-
 #[path ="./pdf_cus.rs"]
 mod pdf_cus;
 
-use eframe::egui;
+use iced::keyboard;
+use iced::widget::{
+    button, center_x, center_y, checkbox, column, container, pick_list, progress_bar, row, rule,
+    scrollable, slider, space, text, text_input, toggler,
+};
+use iced::{Center, Element, Fill, Shrink, Subscription, Theme};
 
-pub struct MainWindow {
-    pub pdf_file_path: String,
+#[derive(Default)]
+pub struct Styling {
+    pub theme: Option<Theme>,
+    pub input_value: String,
+    pub slider_value: f32,
+    pub checkbox_value: bool,
+    pub toggler_value: bool,
 }
 
-impl Default for MainWindow {
-    fn default() -> Self {
-        Self {
-            pdf_file_path: "/home/niutb/文档/jeffreyniu/Hillbilly Elegy by J. D. Vance.pdf".to_string()
+#[derive(Debug, Clone)]
+pub enum Message {
+    ThemeChanged(Theme),
+    InputChanged(String),
+    ButtonPressed,
+    SliderChanged(f32),
+    CheckboxToggled(bool),
+    TogglerToggled(bool),
+    PreviousTheme,
+    NextTheme,
+    ClearTheme,
+}
+
+impl Styling {
+    pub fn update(&mut self, message: Message) {
+        match message {
+            Message::ThemeChanged(theme) => {
+                self.theme = Some(theme);
+            }
+            Message::InputChanged(value) => self.input_value = value,
+            Message::ButtonPressed => {}
+            Message::SliderChanged(value) => self.slider_value = value,
+            Message::CheckboxToggled(value) => self.checkbox_value = value,
+            Message::TogglerToggled(value) => self.toggler_value = value,
+            Message::PreviousTheme | Message::NextTheme => {
+                let current = Theme::ALL
+                    .iter()
+                    .position(|candidate| self.theme.as_ref() == Some(candidate));
+
+                self.theme = Some(if matches!(message, Message::NextTheme) {
+                    Theme::ALL[current.map(|current| current + 1).unwrap_or(0) % Theme::ALL.len()]
+                        .clone()
+                } else {
+                    let current = current.unwrap_or(0);
+
+                    if current == 0 {
+                        Theme::ALL
+                            .last()
+                            .expect("Theme::ALL must not be empty")
+                            .clone()
+                    } else {
+                        Theme::ALL[current - 1].clone()
+                    }
+                });
+            }
+            Message::ClearTheme => {
+                self.theme = None;
+            }
         }
     }
-}
 
-impl MainWindow {
-    // 构造方法（接收创建上下文）
-    pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
-        fonts_cus::load_fonts(&cc.egui_ctx); // 初始化字体系统
-        Self::default() // 返回默认实例
+    pub fn view(&self) -> Element<'_, Message> {
+        let choose_theme = column![
+            text("Theme:"),
+            pick_list(Theme::ALL, self.theme.as_ref(), Message::ThemeChanged)
+                .width(Fill)
+                .placeholder("System"),
+        ]
+        .spacing(10);
+
+        let text_input = text_input("Type something...", &self.input_value)
+            .on_input(Message::InputChanged)
+            .padding(10)
+            .size(20);
+
+        let buttons = {
+            let styles = [
+                ("Primary", button::primary as fn(&Theme, _) -> _),
+                ("Secondary", button::secondary),
+                ("Success", button::success),
+                ("Warning", button::warning),
+                ("Danger", button::danger),
+            ];
+
+            let styled_button = |label| button(text(label).width(Fill).center()).padding(10);
+
+            column![
+                row(styles.into_iter().map(|(name, style)| styled_button(name)
+                    .on_press(Message::ButtonPressed)
+                    .style(style)
+                    .into()))
+                .spacing(10)
+                .align_y(Center),
+                row(styles
+                    .into_iter()
+                    .map(|(name, style)| styled_button(name).style(style).into()))
+                .spacing(10)
+                .align_y(Center),
+            ]
+            .spacing(10)
+        };
+
+        let slider = || slider(0.0..=100.0, self.slider_value, Message::SliderChanged);
+
+        let progress_bar = || progress_bar(0.0..=100.0, self.slider_value);
+
+        let scroll_me = scrollable(column!["Scroll me!", space().height(800), "You did it!"])
+            .width(Fill)
+            .height(Fill)
+            .auto_scroll(true);
+
+        let check = checkbox(self.checkbox_value)
+            .label("Check me!")
+            .on_toggle(Message::CheckboxToggled);
+
+        let check_disabled = checkbox(self.checkbox_value).label("Disabled");
+
+        let toggle = toggler(self.toggler_value)
+            .label("Toggle me!")
+            .on_toggle(Message::TogglerToggled);
+
+        let disabled_toggle = toggler(self.toggler_value).label("Disabled");
+
+        let card = {
+            container(column![text("Card Example").size(24), slider(), progress_bar(),].spacing(20))
+                .width(Fill)
+                .padding(20)
+                .style(container::bordered_box)
+        };
+
+        let content = column![
+            choose_theme,
+            rule::horizontal(1),
+            text_input,
+            buttons,
+            slider(),
+            progress_bar(),
+            row![
+                scroll_me,
+                rule::vertical(1),
+                column![check, check_disabled, toggle, disabled_toggle].spacing(10),
+            ]
+            .spacing(10)
+            .height(Shrink)
+            .align_y(Center),
+            card
+        ]
+        .spacing(20)
+        .padding(20)
+        .max_width(600);
+
+        center_y(scrollable(center_x(content)).spacing(10))
+            .padding(10)
+            .into()
     }
 
-    fn read_pdf(&self, _path: &str) {
-        let result = pdf_cus::load_pdf_of_hands_language(_path);
+    pub fn subscription(&self) -> Subscription<Message> {
+        keyboard::listen().filter_map(|event| {
+            let keyboard::Event::KeyPressed {
+                modified_key: keyboard::Key::Named(modified_key),
+                repeat: false,
+                ..
+            } = event
+            else {
+                return None;
+            };
 
-        match result {
-            Ok(info) => {
-                for (index, item) in info.iter().enumerate() {
-                    println!("PDF Info: {} - {}",index, item);
+            match modified_key {
+                keyboard::key::Named::ArrowUp | keyboard::key::Named::ArrowLeft => {
+                    Some(Message::PreviousTheme)
                 }
+                keyboard::key::Named::ArrowDown | keyboard::key::Named::ArrowRight => {
+                    Some(Message::NextTheme)
+                }
+                keyboard::key::Named::Space => Some(Message::ClearTheme),
+                _ => None,
             }
-            Err(e) => {
-                println!("Error reading PDF or saving images: {:?}", e);
-            }
-        }
+        })
+    }
+
+    pub fn theme(&self) -> Option<Theme> {
+        self.theme.clone()
     }
 }
 
-impl eframe::App for MainWindow {
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rayon::prelude::*;
 
-        let mut visuals = egui::Visuals::light();
-        
-        // use a consistent gray border for all widget states
-        let red = egui::Color32::from_rgb(160,0,0);
-        visuals.widgets.hovered.bg_stroke  = egui::Stroke::new(1.0, red);
-        visuals.widgets.active.bg_stroke   = egui::Stroke::new(1.0, red);
+    use iced_test::{Error, simulator};
 
-        // style selection (used by Slider filled part and selection visuals)
-        visuals.selection.bg_fill = egui::Color32::from_rgb(0,100,0);
-        visuals.selection.stroke = egui::Stroke::new(1.0, red);
+    #[test]
+    #[ignore]
+    fn it_showcases_every_theme() -> Result<(), Error> {
+        Theme::ALL
+            .par_iter()
+            .cloned()
+            .map(|theme| {
+                let mut styling = Styling::default();
+                styling.update(Message::ThemeChanged(theme.clone()));
 
-        visuals.window_fill = egui::Color32::WHITE; // makes popup windows white too
-        ctx.set_visuals(visuals);
-        
-        egui::CentralPanel::default()  
-        .show(ctx, |ui| {
-            ui.heading("Tools");
-            
-            ui.horizontal(|ui| {
-                ui.label("PDF file: ");
+                let mut ui = simulator(styling.view());
+                let snapshot = ui.snapshot(&theme)?;
 
-                ui.add(egui::TextEdit::singleline(&mut self.pdf_file_path).desired_width(450.0));
+                assert!(
+                    snapshot.matches_hash(format!(
+                        "snapshots/{theme}",
+                        theme = theme.to_string().to_ascii_lowercase().replace(" ", "_")
+                    ))?,
+                    "snapshots for {theme} should match!"
+                );
 
-                if ui.button("read").clicked() {
-                    self.read_pdf(&self.pdf_file_path);
-                }
-            });
-        });
+                Ok(())
+            })
+            .collect()
     }
 }
